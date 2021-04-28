@@ -7,6 +7,9 @@
  */
 
 import React, {Component} from 'react';
+import RNBluetoothClassic, {
+  BluetoothEventType,
+} from 'react-native-bluetooth-classic';
 
 import {
   useColorScheme,
@@ -30,11 +33,6 @@ import {
 // const BleManagerModule = NativeModules.BleManager;
 // const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 import {NativeEventEmitter} from 'react-native';
-import BleManager from 'react-native-ble-manager';
-
-const BleManagerModule = NativeModules.BleManager;
-const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
-
 import BluetoothStateManager from 'react-native-bluetooth-state-manager';
 // import {BleManager} from 'react-native-ble-plx';
 
@@ -103,23 +101,9 @@ import {
 
 class App extends Component {
   state = {
-    peripherals: new Map(),
+    // peripherals: new Map(),
   };
   componentDidMount() {
-    BleManager.start({showAlert: false});
-
-    this.handlerDiscover = bleManagerEmitter.addListener(
-      'BleManagerDiscoverPeripheral',
-      this.handleDiscoverPeripheral,
-    );
-
-    this.handlerStop = bleManagerEmitter.addListener(
-      'BleManagerStopScan',
-      this.handleStopScan,
-    );
-
-    this.scanForDevices();
-
     BluetoothStateManager.requestToEnable().then(result => {
       // result === true -> user accepted to enable bluetooth
       // result === false -> user denied to enable bluetooth
@@ -142,29 +126,6 @@ class App extends Component {
   //   console.log(args);
 
   // this.setState({manager: new BleManager()});
-  scanForDevices() {
-    BleManager.scan([], 15);
-  }
-
-  handleDiscoverPeripheral = peripheral => {
-    // const {peripherals} = this.state;
-    // if (peripheral.name) {
-    //   peripherals.set(peripheral.id, peripheral.name);
-    // }
-    // this.setState({peripherals});
-    // console.log(peripheral);
-  };
-
-  handleStopScan = () => {
-    BleManager.getDiscoveredPeripherals([]).then(peripheralsArray => {
-      // Success code
-      peripheralsArray.forEach(ele => {
-        console.log('each ', ele);
-      });
-      // console.log('Discovered peripherals: ' + peripheralsArray);
-    });
-    console.log('Scan is stopped. Devices: ', this.state.peripherals);
-  };
 
   enableB = () => {
     BluetoothStateManager.enable().then(result => {
@@ -217,31 +178,25 @@ class App extends Component {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => {
-            // this.state.manager.startDeviceScan(null, null, (error, device) => {
-            //   if (error) {
-            //     // Handle error (scanning will be stopped automatically)
-            //     console.log('err', error);
-            //     return;
-            //   }
-            //   console.log('conn', device.name);
-            //   // Check if it is a device you are looking for based on advertisement data
-            //   // or other criteria.
-            //   // if (device.name === 'TI BLE Sensor Tag' ||
-            //   //     device.name === 'SensorTag') {
+          onPress={async () => {
+            try {
+              let paired = await RNBluetoothClassic.getBondedDevices();
 
-            //   //     // Stop scanning as it's not necessary if you are scanning for one device.
-            //   //     manager.stopDeviceScan();
-
-            //   //     // Proceed with connection.
-            //   // }
-            // });
-            this.scanForDevices();
-            // BleManager.scan([], 5, true).then(res => {
-            //   // Success code
-            //   console.log('Scan started');
-            //   console.log(res);
-            // });
+              // console.log('boat', paired[2]);
+              let connection = await paired[2].connect();
+              console.log('conn', connection);
+              let connd = await RNBluetoothClassic.getConnectedDevices();
+              console.log('connd', connd);
+              // let iscon = await paired[2].isConnected();
+              // console.log('iscon', iscon);
+              // let wri = await paired[2].write('helllo');
+              // console.log('wri', wri);
+              // console.log('paired', paired);
+            } catch (err) {
+              // Error if Bluetooth is not enabled
+              // Or there are any issues requesting paired devices
+              console.log(err);
+            }
           }}>
           <Text
             style={{
@@ -253,18 +208,7 @@ class App extends Component {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => {
-            BleManager.createBond('65:4F:EB:09:39:1A')
-              .then(() => {
-                console.log(
-                  'createBond success or there is already an existing one',
-                );
-              })
-              .catch(() => {
-                console.log('fail to bond');
-              });
-          }}>
+        <TouchableOpacity onPress={async () => {}}>
           <Text
             style={{
               color: 'white',

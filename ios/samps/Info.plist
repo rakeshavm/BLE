@@ -23,6 +23,10 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.apple.m1</string>
+	</array>
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
